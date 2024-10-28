@@ -1,0 +1,23 @@
+import pandas as pd
+
+# Load data from Excel
+kgdata = pd.read_excel("ssb-barnehager-2015-2023-alder-1-2-aar.xlsm", sheet_name="KOSandel120000",
+                       header=3,
+                       names=['kom', 'y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23'],
+                       na_values=['.', '..'])
+
+# Print column names to verify
+print("Column names:", kgdata.columns)
+
+# Define years to check and set values not equal to 100 to NaN
+years = ['y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23']
+kgdata.loc[:, years] = kgdata.loc[:, years].where(kgdata[years] == 100, float("nan"))
+
+# Task 2A: Find the highest percentage in 2023 and its corresponding municipality
+prosent2023 = kgdata['y23']
+biggest2023 = prosent2023.max()
+
+# Find the municipality code for the highest percentage in 2023
+kommune = kgdata.loc[prosent2023 == biggest2023, 'kom'].iloc[0]
+print("Høyeste prosent i 2023:", biggest2023, "for kommunen:", kommune)
+
