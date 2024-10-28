@@ -6,9 +6,6 @@ kgdata = pd.read_excel("ssb-barnehager-2015-2023-alder-1-2-aar.xlsm", sheet_name
                        names=['kom', 'y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23'],
                        na_values=['.', '..'])
 
-# Print column names to verify
-print("Column names:", kgdata.columns)
-
 # Define years to check and set values not equal to 100 to NaN
 years = ['y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23']
 kgdata.loc[:, years] = kgdata.loc[:, years].where(kgdata[years] == 100, float("nan"))
@@ -17,7 +14,12 @@ kgdata.loc[:, years] = kgdata.loc[:, years].where(kgdata[years] == 100, float("n
 prosent2023 = kgdata['y23']
 biggest2023 = prosent2023.max()
 
-# Find the municipality code for the highest percentage in 2023
 kommune = kgdata.loc[prosent2023 == biggest2023, 'kom'].iloc[0]
 print("Høyeste prosent i 2023:", biggest2023, "for kommunen:", kommune)
 
+# Task 2B: Find the lowest percentage in 2023 and its corresponding municipality
+lavprosent2023 = kgdata['y23']
+lavest2023 = lavprosent2023.min()
+
+lavkommune = kgdata.loc[lavprosent2023 == lavest2023, 'kom'].iloc[0]
+print("Laveste prosent i 2023:", lavest2023, "for kommunen:", lavkommune)
