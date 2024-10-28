@@ -1,25 +1,63 @@
 import pandas as pd
+import altair as alt
+import numpy as np
 
-# Load data from Excel
-kgdata = pd.read_excel("ssb-barnehager-2015-2023-alder-1-2-aar.xlsm", sheet_name="KOSandel120000",
-                       header=3,
-                       names=['kom', 'y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23'],
-                       na_values=['.', '..'])
+# Lese inn data fra Excel
+kosandedata = pd.read_excel("ssb-barnehager-2015-2023-alder-1-2-aar.xlsm", sheet_name="KOSandel120000",
+                            header=3,
+                            names=['kommune', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
+                            na_values=['.', '..'])
 
-# Define years to check and set values not equal to 100 to NaN
-years = ['y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23']
-kgdata.loc[:, years] = kgdata.loc[:, years].where(kgdata[years] == 100, float("nan"))
+# Sjekk kolonnenavn for å se hvordan de er lest inn
+print("Kolonnenavn:", kosandedata.columns)
 
-# Task 2A: Find the highest percentage in 2023 and its corresponding municipality
-prosent2023 = kgdata['y23']
+# Definer listen over årskolonner
+element = ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023']
+
+# Sett verdier som ikke er 100 til NaN for kolonnene i 'element'
+kosandedata[element] = kosandedata[element].applymap(lambda x: x if x == 100 else np.nan)
+
+# Oppgave 2A: Finn høyeste prosent i 2023 og tilhørende kommune
+prosent2023 = kosandedata["2023"]
 biggest2023 = prosent2023.max()
-
-kommune = kgdata.loc[prosent2023 == biggest2023, 'kom'].iloc[0]
+kommune = kosandedata.loc[prosent2023 == biggest2023, 'kommune'].iloc[0]
 print("Høyeste prosent i 2023:", biggest2023, "for kommunen:", kommune)
 
-# Task 2B: Find the lowest percentage in 2023 and its corresponding municipality
-lavprosent2023 = kgdata['y23']
+# Oppgave 2B: Finn laveste prosent i 2023 og tilhørende kommune
+lavprosent2023 = kosandedata["2023"]
 lavest2023 = lavprosent2023.min()
-
-lavkommune = kgdata.loc[lavprosent2023 == lavest2023, 'kom'].iloc[0]
+lavkommune = kosandedata.loc[lavprosent2023 == lavest2023, 'kommune'].iloc[0]
 print("Laveste prosent i 2023:", lavest2023, "for kommunen:", lavkommune)
+
+# Oppgave 2C: Beregn gjennomsnittlig prosent fra 2015-2023 og finn høyeste
+kosandedata['average_percent'] = kosandedata[element].mean(axis=1)
+highest_average = kosandedata['average_percent'].max()
+highest_kommune = kosandedata.loc[kosandedata['average_percent'] == highest_average, 'kommune'].iloc[0]
+print("Høyeste gjennomsnittlig prosent fra 2015-2023:", highest_average, "for kommunen:", highest_kommune)
+
+# Oppgave 2D: Finn laveste gjennomsnittlig prosent fra 2015-2023
+lowest_average = kosandedata['average_percent'].min()
+lowest_kommune = kosandedata.loc[kosandedata['average_percent'] == lowest_average, 'kommune'].iloc[0]
+print("Laveste gjennomsnittlig prosent fra 2015-2023:", lowest_average, "for kommunen:", lowest_kommune)
+
+# Oppgave 2E: Sammenligning av høyeste og laveste gjennomsnittlig prosent
+print("Oppgave 2E - Sammenligning av gjennomsnittlig prosent fra 2015-2023")
+print(f"Høyeste gjennomsnittlig prosent: {highest_average} for kommunen: {highest_kommune}")
+print(f"Laveste gjennomsnittlig prosent: {lowest_average} for kommunen: {lowest_kommune}")
+difference = highest_average - lowest_average
+print(f"Forskjell mellom høyeste og laveste gjennomsnittlig prosent: {difference}")
+
+# Oppgave 2F: Lag et diagram for prosent for Bærum kommune fra 2015-2023
+baerum_data = kosandedata[kosandedata['kommune'] == 'Bærum']
+diagramdata = baerum_data[element].melt(var_name='År', value_name='Prosentandel')
+
+diagram = alt.Chart(diagramdata).mark_bar().encode(
+    x=alt.X('År:N', title='År'),
+    y=alt.Y('Prosentandel:Q', title='Prosentandel')
+).properties(
+    title="Prosentandel for Bærum kommune (2015-2023)"
+)
+
+# Lagre diagrammet som en HTML-fil
+diagram.save('Oppgave2F_Oblig3.html')
+print("Diagrammet for Bærum kommune lagret som 'Oppgave2F_Oblig3.html'")
